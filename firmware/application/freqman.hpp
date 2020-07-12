@@ -24,6 +24,7 @@
 #include <string>
 #include "file.hpp"
 #include "ui_receiver.hpp"
+#include "receiver_model.hpp"
 #include "string_format.hpp"
 
 #ifndef __FREQMAN_H__
@@ -51,6 +52,7 @@ enum freqman_entry_type {
 struct freqman_entry {
 	rf::Frequency frequency_a { 0 };
 	rf::Frequency frequency_b { 0 };
+	ReceiverModel::Mode modulation { };
 	std::string description { };
 	freqman_entry_type type { };
 };

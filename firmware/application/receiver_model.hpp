@@ -39,7 +39,7 @@ public:
 		SpectrumAnalysis = 3,
 		Capture = 4
 	};
-
+	std::string friendly_modename(ReceiverModel::Mode _mode) const;
 	rf::Frequency tuning_frequency() const;
 	void set_tuning_frequency(rf::Frequency f);
 

@@ -23,6 +23,8 @@
 #include "freqman.hpp"
 #include <algorithm>
 
+using namespace portapack;
+
 std::vector<std::string> get_freqman_files() {
 	std::vector<std::string> file_list;
 	
@@ -42,6 +44,7 @@ bool load_freqman_file(std::string& file_stem, freqman_db &db) {
 	char * line_start;
 	char * line_end;
 	std::string description;
+	ReceiverModel::Mode modulation;
 	rf::Frequency frequency_a, frequency_b;
 	char file_data[257];
 	freqman_entry_type type;
@@ -94,7 +97,26 @@ bool load_freqman_file(std::string& file_stem, freqman_db &db) {
 				} else
 					frequency_a = 0;
 			}
-			
+			pos = strstr(line_start, "m=");
+			if (pos) {
+				pos += 2;
+				std::string mode = string(pos, 2);
+				if(mode.compare("am")){
+					modulation = ReceiverModel::Mode::AMAudio;
+				} else if(mode.compare("nf")){
+					modulation = ReceiverModel::Mode::NarrowbandFMAudio;
+				} else if(mode.compare("wb")){
+					modulation = ReceiverModel::Mode::WidebandFMAudio;
+				} else if(mode.compare("sp")){
+					modulation = ReceiverModel::Mode::SpectrumAnalysis;
+				} else if(mode.compare("ca")){
+					modulation = ReceiverModel::Mode::Capture;
+				} else
+					modulation = ReceiverModel::Mode::NarrowbandFMAudio;
+				
+			} else {
+				modulation = ReceiverModel::Mode::NarrowbandFMAudio; // Set default to NFM
+			}
 			// Read description until , or LF
 			pos = strstr(line_start, "d=");
 			if (pos) {
@@ -104,7 +126,7 @@ bool load_freqman_file(std::string& file_stem, freqman_db &db) {
 			} else
 				description = "-";
 			
-			db.push_back({ frequency_a, frequency_b, description, type });
+			db.push_back({ frequency_a, frequency_b, modulation, description, type });
 			n++;
 			
 			if (n >= FREQMAN_MAX_PER_FILE) return true;
@@ -150,7 +172,42 @@ bool save_freqman_file(std::string& file_stem, freqman_db &db) {
 			item_string = "a=" + to_string_dec_uint(frequency_a / 1000) + to_string_dec_uint(frequency_a % 1000UL, 3, '0');
 			item_string += ",b=" + to_string_dec_uint(frequency_b / 1000) + to_string_dec_uint(frequency_b % 1000UL, 3, '0');
 		}
-		
+		switch(entry.modulation){
+			case ReceiverModel::Mode::AMAudio:
+				item_string += ",m=am";
+				break;
+			case ReceiverModel::Mode::NarrowbandFMAudio:
+				item_string += ",m=nf";
+				break;
+			case ReceiverModel::Mode::WidebandFMAudio:
+				item_string += ",m=wb";
+				break;
+			case ReceiverModel::Mode::SpectrumAnalysis:
+				item_string += ",m=sp";
+				break;
+			case ReceiverModel::Mode::Capture:
+				item_string += ",m=ca";
+				break;
+			default:
+				if (entry.type == SINGLE) { // below values are rough estimates. Other modultaions are used which these bands.
+					if (frequency_a<88000000){
+						item_string += ",m=am"; // VHF
+					} else if (frequency_a>=88000000 && frequency_a<108000000){
+						item_string += ",m=wb"; // FM Radio
+					} else if (frequency_a>=108000000 && frequency_a<137000000){
+						item_string += ",m=am"; // AIR band
+					} else if (frequency_a>=156000000 && frequency_a<163000000){
+						item_string += ",m=nf"; // Marine traffic
+					} else if (frequency_a>=163000000 && frequency_a<433000000){
+						item_string += ",m=am"; // Mil band
+					} else if (frequency_a>=433000000){
+						item_string += ",m=nf"; // UHF start
+					}
+				} else {
+					item_string += ",m=na";
+				}
+		}
+			
 		if (entry.description.size())
 			item_string += ",d=" + entry.description;
 		
@@ -170,9 +227,8 @@ bool create_freqman_file(std::string& file_stem, File& freqman_file) {
 
 std::string freqman_item_string(freqman_entry &entry, size_t max_length) {
 	std::string item_string;
-
 	if (entry.type == SINGLE) {
-		item_string = to_string_short_freq(entry.frequency_a) + "M: " + entry.description;
+		item_string = to_string_short_freq(entry.frequency_a) + "Mhz: " + receiver_model.friendly_modename(entry.modulation) + ": " + entry.description;
 	} else {
 		item_string = "Range: " + entry.description;
 	}

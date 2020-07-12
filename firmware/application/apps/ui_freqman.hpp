@@ -24,6 +24,7 @@
 #include "ui_widget.hpp"
 #include "ui_painter.hpp"
 #include "ui_menu.hpp"
+#include "ui_tabview.hpp"
 #include "ui_navigation.hpp"
 #include "ui_receiver.hpp"
 #include "ui_textentry.hpp"
@@ -92,6 +93,7 @@ public:
 private:
 	std::string desc_buffer { };
 	rf::Frequency value_ { };
+	ReceiverModel::Mode modulation { };
 	
 	void on_save_name();
 	void on_save_timestamp();
@@ -132,6 +134,11 @@ private:
 	void refresh_widgets(const bool v);
 };
 
+class FreqManModulationSelectView : FrequencyLoadView {
+public:
+private:
+};
+
 class FrequencyManagerView : public FreqManBaseView {
 public:
 	FrequencyManagerView(NavigationView& nav);
@@ -144,6 +151,7 @@ private:
 	
 	void refresh_widgets(const bool v);
 	void on_edit_freq(rf::Frequency f);
+//	void on_edit_mode(NavigationView& nav);
 	void on_edit_desc(NavigationView& nav);
 	void on_new_category(NavigationView& nav);
 	void on_delete();
@@ -158,16 +166,22 @@ private:
 	};
 
 	Button button_edit_freq {
-		{ 0 * 8, 29 * 8, 14 * 8, 32 },
+		{ 0 * 8, 29 * 8, 14 * 8, 25 },
 		"Frequency"
 	};
+/*
+	Button button_edit_mode {
+		{ 0 * 8, 34 * 8, 14 * 8, 25 },
+		"Modulation"
+	};
+*/
 	Button button_edit_desc {
-		{ 0 * 8, 34 * 8, 14 * 8, 32 },
+		{ 0 * 8, 39 * 8, 14 * 8, 25 },
 		"Description"
 	};
 	
 	Button button_delete {
-		{ 18 * 8, 27 * 8, 12 * 8, 32 },
+		{ 18 * 8, 27 * 8, 12 * 8, 25 },
 		"Delete"
 	};
 };

@@ -259,6 +259,27 @@ void ReceiverModel::update_headphone_volume() {
 	audio::headphone::set_volume(headphone_volume_);
 }
 
+std::string ReceiverModel::friendly_modename(ReceiverModel::Mode _mode) const {
+	switch(_mode){
+		default:
+		case ReceiverModel::Mode::AMAudio:
+			return "AM";
+			break;
+		case ReceiverModel::Mode::NarrowbandFMAudio:
+			return "NFM";
+			break;
+		case ReceiverModel::Mode::WidebandFMAudio:
+			return "WFM";
+			break;
+		case ReceiverModel::Mode::SpectrumAnalysis:
+			return "Spa";
+			break;
+		case ReceiverModel::Mode::Capture:
+			return "Cap";
+			break;
+	}
+}
+
 void ReceiverModel::update_modulation() {
 	switch(modulation()) {
 	default:

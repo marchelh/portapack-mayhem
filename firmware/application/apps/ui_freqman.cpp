@@ -149,13 +149,13 @@ void FrequencySaveView::save_current_file() {
 
 void FrequencySaveView::on_save_name() {
 	text_prompt(nav_, desc_buffer, 28, [this](std::string& buffer) {
-		database.push_back({ value_, 0, buffer, SINGLE });
+		database.push_back({ value_, 0, ReceiverModel::Mode::NarrowbandFMAudio, buffer, SINGLE });
 		save_current_file();
 	});
 }
 
 void FrequencySaveView::on_save_timestamp() {
-	database.push_back({ value_, 0, live_timestamp.string(), SINGLE });
+	database.push_back({ value_, 0, ReceiverModel::Mode::NarrowbandFMAudio, live_timestamp.string(), SINGLE });
 	save_current_file();
 }
 
@@ -244,12 +244,29 @@ FrequencyLoadView::FrequencyLoadView(
 	};
 }
 
+/*
+FreqManModulationSelectView::FreqManModulationSelectView(
+	NavigationView& nav
+) : FrequencyLoadView(nav)
+{
+
+}
+*/
+
 void FrequencyManagerView::on_edit_freq(rf::Frequency f) {
 	database[menu_view.highlighted_index()].frequency_a = f;
 	save_freqman_file(file_list[categories[current_category_id].second], database);
 	refresh_list();
 }
-
+/*
+void FrequencyManagerView::on_edit_mode(NavigationView& nav) {
+	text_prompt(nav, desc_buffer, 28, [this](std::string& buffer) {
+		database[menu_view.highlighted_index()].mode = buffer;
+		refresh_list();
+		save_freqman_file(file_list[categories[current_category_id].second], database);
+	});
+}
+*/
 void FrequencyManagerView::on_edit_desc(NavigationView& nav) {
 	text_prompt(nav, desc_buffer, 28, [this](std::string& buffer) {
 		database[menu_view.highlighted_index()].description = buffer;
@@ -257,6 +274,7 @@ void FrequencyManagerView::on_edit_desc(NavigationView& nav) {
 		save_freqman_file(file_list[categories[current_category_id].second], database);
 	});
 }
+
 
 void FrequencyManagerView::on_new_category(NavigationView& nav) {
 	text_prompt(nav, desc_buffer, 12, [this](std::string& buffer) {
@@ -275,6 +293,7 @@ void FrequencyManagerView::on_delete() {
 
 void FrequencyManagerView::refresh_widgets(const bool v) {
 	button_edit_freq.hidden(v);
+//	button_edit_mode.hidden(v);
 	button_edit_desc.hidden(v);
 	button_delete.hidden(v);
 	menu_view.hidden(v);
@@ -301,6 +320,7 @@ FrequencyManagerView::FrequencyManagerView(
 		&menu_view,
 		&text_empty,
 		&button_edit_freq,
+//		&button_edit_mode,
 		&button_edit_desc,
 		&button_delete
 	});
@@ -316,7 +336,7 @@ FrequencyManagerView::FrequencyManagerView(
 	on_select_frequency = [this]() {
 		button_edit_freq.focus();
 	};
-	
+
 	button_new_category.on_select = [this, &nav](Button&) {
 		desc_buffer = "";
 		on_new_category(nav);
@@ -329,6 +349,13 @@ FrequencyManagerView::FrequencyManagerView(
 		};
 	};
 	
+	/*
+	button_edit_mode.on_select = [this, &nav](Button&) {
+		tab_mode.set_selected(database[menu_view.highlighted_index()].modulation);
+		on_edit_desc(nav);
+	};
+	*/
+
 	button_edit_desc.on_select = [this, &nav](Button&) {
 		desc_buffer = database[menu_view.highlighted_index()].description;
 		on_edit_desc(nav);
